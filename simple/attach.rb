@@ -12,8 +12,10 @@ s = Net::SSH::Telnet.new(
 
 gdb = Rgdb.new(s)
 
-gdb.attach(11815)
+puts gdb.attach(5238)
 gdb.b('init')
 gdb.c
-puts gdb.p('p.a11')
-gdb.close
+puts gdb.p('p.a')
+gdb.cmd('d 1')
+gdb.c!
+#~ gdb.close

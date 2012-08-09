@@ -54,6 +54,27 @@ class Rgdb
     end
     ret
   end
+  
+  # continue no wait
+  def c!
+    cmd_waitfor('c','Continuing.')
+  end
+  
+  # wait for a cmd over, e.g. c!
+  def w(options = {})
+    timeout = options[:timeout] || 3
+    ret = ""
+    begin
+      timeout(timeout) do
+        ret = waitfor(/\(gdb\)/)
+      end
+    rescue TimeoutError
+      #TODO: stop it
+      raise ContinueTimeoutError, "timeout after #{timeout} seconds"
+    end
+    ret
+  end
+  
   # print
   def p(what)
     ret = cmd("p #{what}")
@@ -73,6 +94,7 @@ class Rgdb
   def s
     cmd('s')
   end
+  
   def r
     cmd('r')
   end
@@ -81,15 +103,21 @@ class Rgdb
     cmd_waitfor(what, /\(gdb\)/)
   end
   
-  def cmd_waitfor(cmd, msg)
+  # 等
+  def waitfor(msg)
     msg = Regexp.new(msg) if msg.kind_of?(String)
-    #~ puts "execute: #{cmd}"
-    shell.puts(cmd)
     output = ""
     shell.waitfor(msg) do |data|
       output = data
     end
-    output.gsub(/^\s*#{cmd}/,'').gsub(/\(gdb\)\s*$/,'').strip
+    output.gsub(/\(gdb\)\s*$/,'').strip
+  end
+  
+  
+  def cmd_waitfor(cmd, msg)
+    #~ puts "execute: #{cmd}"
+    shell.puts(cmd)
+    waitfor(msg).gsub(/^\s*#{cmd}/,'')
   end
   
   def close
