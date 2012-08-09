@@ -5,7 +5,7 @@ class Rgdb
   class Error < RuntimeError; end
   class AttachError < Error; end
   class ContinueTimeoutError < Error; end
-  
+  class PrintError < Error; end
   def initialize(shell)
     @shell = shell
   end
