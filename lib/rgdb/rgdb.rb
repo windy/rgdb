@@ -1,3 +1,4 @@
+# coding : utf-8
 require 'timeout'
 
 class Rgdb
@@ -8,6 +9,8 @@ class Rgdb
   class PrintError < Error; end
   def initialize(shell)
     @shell = shell
+    # 延迟执行的标记
+    @running = false
   end
   attr_reader :shell
   def attach(pid)
@@ -26,7 +29,7 @@ class Rgdb
     cmd(cmd)
   end
   # break
-  def b(what)
+  def break(what)
     cmd = "b #{what}"
     ret = cmd_waitfor(cmd, /\(gdb\)|Make breakpoint pending on future shared library load/)
     case ret
@@ -41,7 +44,7 @@ class Rgdb
     ret
   end
   # continue
-  def c(options = {})
+  def continue(options = {})
     timeout = options[:timeout] || 3
     ret = ""
     begin
@@ -56,12 +59,12 @@ class Rgdb
   end
   
   # continue no wait
-  def c!
+  def continue!
     cmd_waitfor('c','Continuing.')
   end
   
   # wait for a cmd over, e.g. c!
-  def w(options = {})
+  def wait(options = {})
     timeout = options[:timeout] || 3
     ret = ""
     begin
@@ -76,7 +79,7 @@ class Rgdb
   end
   
   # print
-  def p(what)
+  def print(what)
     ret = cmd("p #{what}")
     case ret
     when /No symbol/
@@ -87,17 +90,30 @@ class Rgdb
     ret
   end
   # next
-  def n
+  def next
     cmd('n')
   end
   # step
-  def s
+  def step
     cmd('s')
   end
-  
-  def r
+  # TODO: 重新执行的提示, 以及
+  def run
     cmd('r')
   end
+  
+  def ctrl_c
+    shell.print("\x03")
+  end
+  
+  alias_method :b, :break
+  alias_method :c, :continue
+  alias_method :c!, :continue!
+  alias_method :p, :print
+  alias_method :n, :next
+  alias_method :s, :step
+  alias_method :r, :run
+  alias_method :w, :wait
   
   def cmd(what)
     cmd_waitfor(what, /\(gdb\)/)
