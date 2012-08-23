@@ -133,7 +133,7 @@ class Rgdb
   def cmd_waitfor(cmd, msg)
     #~ puts "execute: #{cmd}"
     shell.puts(cmd)
-    waitfor(msg).gsub(/^\s*#{cmd}/,'')
+    waitfor(msg).gsub(/^\s*#{Regexp.escape(cmd)}/,'')
   end
   
   def close
